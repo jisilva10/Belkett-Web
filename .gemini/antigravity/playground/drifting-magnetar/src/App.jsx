@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { ModeToggle } from './components/ModeToggle';
 import { FlowerInputGroup } from './components/FlowerInputGroup';
 import { SuccessModal } from './components/SuccessModal';
-import { Send, User } from 'lucide-react';
+import { AdminModal } from './components/AdminModal';
+import { Send, User, Settings } from 'lucide-react';
 import { cn } from './lib/utils';
 
 import logo from './assets/logo.png';
@@ -11,7 +12,10 @@ export default function App() {
   const [mode, setMode] = useState('recibo');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
   const [lastSubmission, setLastSubmission] = useState(null);
+
+  // ... (formData state and handlers remain same)
 
   const [formData, setFormData] = useState({
     rosas_individuales: { principal: '', vendido: '', seguidor: '', danado: '' },
@@ -105,7 +109,7 @@ export default function App() {
     console.log("Payload:", payload);
 
     try {
-      await fetch('https://1.jisn8n.work/webhook-test/9f10a41e-3a60-4606-9e56-f7fabc841c5c', {
+      await fetch(import.meta.env.VITE_WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,13 +143,30 @@ export default function App() {
       <header className="sticky top-0 z-40 bg-white/60 backdrop-blur-xl border-b border-gray-100/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
+            <div className="flex items-center justify-between w-full md:w-auto">
               <img src={logo} alt="Belkett Logo" className="h-16 w-auto object-contain" />
+
+              {/* Mobile Admin Button - visible only on small screens if needed, otherwise keep in main flow */}
+              <button
+                onClick={() => setShowAdmin(true)}
+                className="md:hidden p-2 text-gray-500 hover:text-gray-900 bg-gray-100 rounded-lg"
+              >
+                <Settings size={20} />
+              </button>
             </div>
 
             {/* Mode Selector */}
-            <div className="w-full md:w-auto">
+            <div className="w-full md:w-auto flex items-center gap-4">
               <ModeToggle currentMode={mode} onModeChange={setMode} />
+
+              {/* Desktop Admin Button */}
+              <button
+                onClick={() => setShowAdmin(true)}
+                className="hidden md:flex flex-col items-center gap-1 text-xs font-bold text-gray-400 hover:text-gray-900 transition-colors px-3"
+              >
+                <Settings size={20} />
+                <span>Admin</span>
+              </button>
             </div>
           </div>
         </div>
@@ -240,6 +261,11 @@ export default function App() {
         isOpen={showSuccess}
         onClose={() => setShowSuccess(false)}
         data={lastSubmission}
+      />
+
+      <AdminModal
+        isOpen={showAdmin}
+        onClose={() => setShowAdmin(false)}
       />
     </div>
   );
