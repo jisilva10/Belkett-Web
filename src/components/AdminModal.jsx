@@ -50,13 +50,14 @@ export function AdminModal({ isOpen, onClose }) {
     const registerEntry = async () => {
         setIsSubmitting(true);
         const payload = {
-            accion: 'ingreso',
+            fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+            modo: 'ingreso',
             responsable: 'Admin',
-            cantidades: {
-                paquetes_rosas: Number(inventoryData.paquetes_rosas) || 0,
-                rosas_individuales: Number(inventoryData.rosas_individuales) || 0,
-                girasoles: Number(inventoryData.girasoles) || 0,
-                flores_verano: Number(inventoryData.flores_verano) || 0
+            datos: {
+                paquetes_rosas: { principal: Number(inventoryData.paquetes_rosas) || 0 },
+                rosas_individuales: { principal: Number(inventoryData.rosas_individuales) || 0 },
+                girasoles: { principal: Number(inventoryData.girasoles) || 0 },
+                flores_verano: { principal: Number(inventoryData.flores_verano) || 0 }
             }
         };
 
