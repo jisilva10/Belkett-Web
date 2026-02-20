@@ -62,7 +62,7 @@ export function AdminModal({ isOpen, onClose }) {
         };
 
         try {
-            const res = await fetch(import.meta.env.VITE_WEBHOOK_INGRESO_URL, {
+            const res = await fetch(import.meta.env.VITE_WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(payload)
