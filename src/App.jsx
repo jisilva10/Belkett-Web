@@ -21,7 +21,6 @@ export default function App() {
     rosas_individuales: { principal: '', vendido: '', seguidor: '', danado: '' },
     paquetes_rosas: { principal: '', vendido: '', danado: '' },
     girasoles: { principal: '', vendido: '', danado: '' },
-    flores_verano: { principal: '', vendido: '', danado: '' },
     responsable: ''
   });
 
@@ -66,8 +65,7 @@ export default function App() {
         const allData = [
           formData.rosas_individuales,
           formData.paquetes_rosas,
-          formData.girasoles,
-          formData.flores_verano
+          formData.girasoles
         ];
 
         // Check if any category has these values > 0
@@ -97,11 +95,6 @@ export default function App() {
           principal: getNumber(formData.girasoles.principal),
           danado: getNumber(formData.girasoles.danado),
           vendido: getNumber(formData.girasoles.vendido)
-        },
-        flores_verano: {
-          principal: getNumber(formData.flores_verano.principal),
-          danado: getNumber(formData.flores_verano.danado),
-          vendido: getNumber(formData.flores_verano.vendido)
         }
       }
     };
@@ -131,8 +124,7 @@ export default function App() {
       ...prev,
       rosas_individuales: { principal: '', vendido: '', seguidor: '', danado: '' },
       paquetes_rosas: { principal: '', vendido: '', danado: '' },
-      girasoles: { principal: '', vendido: '', danado: '' },
-      flores_verano: { principal: '', vendido: '', danado: '' },
+      girasoles: { principal: '', vendido: '', danado: '' }
     }));
   };
 
@@ -224,14 +216,6 @@ export default function App() {
               color="bg-white"
             />
 
-            <FlowerInputGroup
-              title="Flores Verano"
-              categoryId="flores_verano"
-              mode={mode}
-              data={formData.flores_verano}
-              onChange={handleInputChange}
-              color="bg-white"
-            />
           </div>
 
           {/* Submit Button */}

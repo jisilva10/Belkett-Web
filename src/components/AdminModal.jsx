@@ -15,7 +15,6 @@ export function AdminModal({ isOpen, onClose }) {
         paquetes_rosas: '',
         rosas_individuales: '',
         girasoles: '',
-        flores_verano: ''
     });
 
     const handleUnlock = () => {
@@ -57,7 +56,6 @@ export function AdminModal({ isOpen, onClose }) {
                 paquetes_rosas: { principal: Number(inventoryData.paquetes_rosas) || 0 },
                 rosas_individuales: { principal: Number(inventoryData.rosas_individuales) || 0 },
                 girasoles: { principal: Number(inventoryData.girasoles) || 0 },
-                flores_verano: { principal: Number(inventoryData.flores_verano) || 0 }
             }
         };
 
@@ -69,7 +67,7 @@ export function AdminModal({ isOpen, onClose }) {
             });
             if (res.ok) {
                 alert("Ingreso registrado correctamente");
-                setInventoryData({ paquetes_rosas: '', rosas_individuales: '', girasoles: '', flores_verano: '' });
+                setInventoryData({ paquetes_rosas: '', rosas_individuales: '', girasoles: '' });
             } else {
                 alert("Error al registrar ingreso");
             }
@@ -217,17 +215,6 @@ export function AdminModal({ isOpen, onClose }) {
                                                         type="number"
                                                         name="girasoles"
                                                         value={inventoryData.girasoles}
-                                                        onChange={handleInventoryChange}
-                                                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-green-500 transition-colors"
-                                                        placeholder="0"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <label className="text-xs font-bold text-gray-500 uppercase">🌸 Flores Verano</label>
-                                                    <input
-                                                        type="number"
-                                                        name="flores_verano"
-                                                        value={inventoryData.flores_verano}
                                                         onChange={handleInventoryChange}
                                                         className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-green-500 transition-colors"
                                                         placeholder="0"
