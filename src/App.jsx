@@ -187,7 +187,7 @@ export default function App() {
           </div>
 
           {/* Dynamic Flower Inputs - HORIZONTAL GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FlowerInputGroup
               title="Rosas Individuales"
               categoryId="rosas_individuales"
