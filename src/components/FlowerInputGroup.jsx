@@ -50,8 +50,8 @@ export function FlowerInputGroup({
                 </div>
 
                 <AnimatePresence>
-                    {/* Danado Input - Visible in Production only as requested */}
-                    {mode === 'produccion' && (
+                    {/* Danado Input - Moved to Closing as requested */}
+                    {mode === 'cierre' && (
                         <Motion.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
@@ -94,8 +94,8 @@ export function FlowerInputGroup({
                         </Motion.div>
                     )}
 
-                    {/* Seguidor Input - Visible in Production (for Rosas) and Closing (for Rosas) */}
-                    {hasSeguidor && (mode === 'produccion' || mode === 'cierre') && (
+                    {/* Seguidor Input - Visible only in Closing */}
+                    {hasSeguidor && mode === 'cierre' && (
                         <Motion.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
@@ -103,7 +103,7 @@ export function FlowerInputGroup({
                             className="overflow-hidden"
                         >
                             <label className="block text-xs font-bold text-pink-600 uppercase tracking-widest mb-1 ml-1">
-                                🎁 Regalo
+                                {categoryId === 'rosas_individuales' ? '🤝 Seguidor' : '🎁 Regalo'}
                             </label>
                             <input
                                 type="number"
