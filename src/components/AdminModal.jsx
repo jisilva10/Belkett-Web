@@ -40,9 +40,9 @@ export function AdminModal({ isOpen, onClose }) {
                 body: JSON.stringify({ accion: 'consultar_saldo', producto })
             });
             const data = await res.json();
-            setBalanceResponse(JSON.stringify(data, null, 2));
+            setBalanceResponse(data);
         } catch (error) {
-            setBalanceResponse("Error al consultar saldo");
+            setBalanceResponse({ title: "Error", mensaje: "Error al consultar saldo" });
             console.error(error);
         }
     };
@@ -157,8 +157,24 @@ export function AdminModal({ isOpen, onClose }) {
                                                 </button>
                                             </div>
 
-                                            <div className="bg-gray-900 text-gray-100 p-4 rounded-xl font-mono text-sm min-h-[60px] whitespace-pre-wrap">
-                                                {balanceResponse || "Presiona un botón para ver el saldo..."}
+                                            <div className="bg-gray-100 p-4 rounded-xl min-h-[60px]">
+                                                {typeof balanceResponse === 'string' ? (
+                                                    <p className="text-gray-500 text-center font-medium">{balanceResponse || "Presiona un botón para ver el saldo..."}</p>
+                                                ) : balanceResponse ? (
+                                                    <div className="text-center space-y-2">
+                                                        {balanceResponse.titulo && (
+                                                            <h4 className="text-xl font-black text-gray-800">{balanceResponse.titulo}</h4>
+                                                        )}
+                                                        {balanceResponse.mensaje && (
+                                                            <div
+                                                                className="text-gray-600 text-lg"
+                                                                dangerouslySetInnerHTML={{ __html: balanceResponse.mensaje }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-gray-400 text-center">Presiona un botón para ver el saldo...</p>
+                                                )}
                                             </div>
                                         </div>
 
