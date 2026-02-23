@@ -8,20 +8,24 @@ export default {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: '#db2777', // pink-600
+                    DEFAULT: '#be123c', // rose-700
                     foreground: '#ffffff',
                 },
                 secondary: {
-                    DEFAULT: '#fce7f3', // pink-100
-                    foreground: '#db2777', // pink-600
+                    DEFAULT: '#fdf2f8', // pink-50
+                    foreground: '#be123c', // rose-700
                 },
-                background: '#fdf2f8', // pink-50
+                accent: {
+                    DEFAULT: '#fb7185', // rose-400
+                    foreground: '#ffffff',
+                },
+                background: '#fafaf9', // stone-50 (warm gray)
                 surface: '#ffffff',
-                input: '#e5e7eb', // gray-200
-                ring: '#db2777', // pink-600
+                input: '#e7e5e4', // stone-200
+                ring: '#be123c', // rose-700
             },
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
+                sans: ['Outfit', 'sans-serif'],
             },
             animation: {
                 'fade-in': 'fadeIn 0.3s ease-out forwards',

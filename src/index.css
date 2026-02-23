@@ -10,10 +10,15 @@
     --foreground: 222.2 84% 4.9%;
   }
 
+  html {
+    @apply h-full overflow-hidden;
+  }
+
   body {
-    @apply bg-background text-gray-900 font-sans antialiased text-lg;
-    background-color: #fdf2f8;
-    /* pink-50 fallback */
+    @apply h-full overflow-hidden bg-background text-gray-900 font-sans antialiased text-xl;
+    background-color: #fafaf9;
+    /* stone-50 */
+    letter-spacing: -0.01em;
   }
 }
 

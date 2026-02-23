@@ -129,7 +129,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen pb-20 bg-gray-50 selection:bg-pink-200 font-sans">
+    <div className="h-screen flex flex-col bg-background selection:bg-rose-200 font-sans text-gray-900 overflow-hidden">
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/60 backdrop-blur-xl border-b border-gray-100/50 shadow-sm">
@@ -164,15 +164,13 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 pt-8 space-y-8">
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-
-          {/* Responsable & Observaciones Row */}
+      <main className="flex-1 overflow-y-auto px-6 pt-6 pb-20 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Responsable Row - BALANCED PREMIUM */}
           <div className="w-full">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 max-w-2xl mx-auto">
-              <label className="flex items-center gap-2 text-sm font-bold text-gray-700 uppercase tracking-wider mb-3">
-                <User size={18} className="text-pink-500" />
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100 max-w-2xl mx-auto ring-1 ring-black/5">
+              <label className="flex items-center gap-2 text-xs font-black text-rose-600 uppercase tracking-[0.2em] mb-3 ml-1">
+                <User size={16} />
                 Responsable
               </label>
               <input
@@ -180,8 +178,8 @@ export default function App() {
                 name="responsable"
                 value={formData.responsable}
                 onChange={handleTextChange}
-                placeholder="Nombre del encargado"
-                className="w-full bg-gray-50 border-0 border-b-2 border-gray-200 focus:border-pink-500 focus:ring-0 px-4 py-3 text-lg outline-none transition-all placeholder:text-gray-400 font-medium"
+                placeholder="Ingresar nombre..."
+                className="w-full bg-stone-50/30 border-0 border-b-2 border-stone-100 focus:border-rose-500 focus:ring-0 px-4 py-3 text-2xl outline-none transition-all placeholder:text-stone-200 font-bold"
               />
             </div>
           </div>
@@ -219,20 +217,22 @@ export default function App() {
           </div>
 
           {/* Submit Button */}
+          {/* Submit Button */}
+          {/* Submit Button */}
           <div className="pt-6 pb-12 flex justify-center">
             <button
               type="submit"
               disabled={isSubmitting}
               className={cn(
-                "w-full max-w-md flex items-center justify-center gap-3 py-5 rounded-2xl text-white font-bold text-xl shadow-xl shadow-pink-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98]",
-                isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-gray-900 hover:bg-black"
+                "w-full max-w-md flex items-center justify-center gap-3 py-5 rounded-2xl text-white font-black text-2xl shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98]",
+                isSubmitting ? "bg-stone-300 cursor-not-allowed" : "bg-gray-900 hover:bg-black shadow-gray-900/20"
               )}
             >
               {isSubmitting ? (
-                <>Enviando registro...</>
+                <>Enviando...</>
               ) : (
                 <>
-                  <Send size={24} />
+                  <Send size={28} />
                   Enviar Inventario
                 </>
               )}
