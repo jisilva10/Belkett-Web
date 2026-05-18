@@ -254,7 +254,7 @@ export function MobileAdminApp() {
       </main>
 
       {/* Fixed Bottom Button */}
-      <div className="flex-none p-4 pb-[max(env(safe-area-inset-bottom),1rem)] bg-white border-t border-gray-100 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+      <div className="flex-none p-4 pb-4 bg-white border-t border-gray-100 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
         <button
           onClick={registerEntry}
           disabled={isSubmitting}
