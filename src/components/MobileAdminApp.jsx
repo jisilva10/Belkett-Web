@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { Lock, Unlock, BarChart3, Truck, LogOut, Send } from 'lucide-react';
+import { Lock, Unlock, BarChart3, Truck, LogOut, Send, RefreshCw } from 'lucide-react';
 import { cn } from '../lib/utils';
 import logo from '../assets/logo.png';
 
@@ -159,16 +159,21 @@ export function MobileAdminApp() {
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Belkett</p>
           </div>
         </div>
-        <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-500 bg-gray-50 rounded-xl transition-colors active:scale-95">
-          <LogOut size={20} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => window.location.reload()} className="p-2 text-gray-400 hover:text-blue-500 bg-gray-50 rounded-xl transition-colors active:scale-95">
+            <RefreshCw size={20} />
+          </button>
+          <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-500 bg-gray-50 rounded-xl transition-colors active:scale-95">
+            <LogOut size={20} />
+          </button>
+        </div>
       </header>
 
-      {/* Main Content Area - No vertical scroll */}
-      <main className="flex-1 flex flex-col min-h-0 pt-6">
+      {/* Main Content Area - Vertically Centered */}
+      <main className="flex-1 flex flex-col justify-center gap-6 min-h-0 py-6">
         
-        {/* Balance Section - Fixed at top */}
-        <div className="flex-none px-6 mb-6">
+        {/* Balance Section */}
+        <div className="flex-none px-6">
           <div className="flex items-center gap-2 mb-3 ml-1">
             <BarChart3 className="text-gray-900 h-5 w-5" />
             <h2 className="text-lg font-black text-gray-900 uppercase tracking-wider">Saldos</h2>
