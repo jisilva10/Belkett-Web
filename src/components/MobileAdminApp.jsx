@@ -149,7 +149,7 @@ export function MobileAdminApp() {
   return (
     <div className="h-[100dvh] w-full bg-stone-50 flex flex-col overflow-hidden selection:bg-green-200">
       {/* Header */}
-      <header className="flex-none bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10 shadow-sm">
+      <header className="flex-none bg-white border-b border-gray-100 px-6 pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 flex items-center justify-between z-10 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="bg-green-100 p-2 rounded-xl">
             <Unlock className="text-green-600 h-6 w-6" />
