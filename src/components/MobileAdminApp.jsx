@@ -16,7 +16,7 @@ const CARDS = [
 
 export function MobileAdminApp() {
   const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => localStorage.getItem('adminAuth') === 'true');
   const [balanceResponse, setBalanceResponse] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,7 +32,7 @@ export function MobileAdminApp() {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
-      fetchBalance('ambos');
+      localStorage.setItem('adminAuth', 'true');
     } else {
       alert("Contraseña incorrecta");
     }
@@ -59,6 +59,12 @@ export function MobileAdminApp() {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (isAuthenticated && !balanceResponse) {
+      fetchBalance('ambos');
+    }
+  }, [isAuthenticated]);
 
   const registerEntry = async () => {
     setIsSubmitting(true);
@@ -99,6 +105,7 @@ export function MobileAdminApp() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    localStorage.removeItem('adminAuth');
     setPassword('');
     setBalanceResponse(null);
   };
@@ -169,10 +176,10 @@ export function MobileAdminApp() {
         </div>
       </header>
 
-      {/* Main Content Area - Vertically Centered */}
-      <main className="flex-1 flex flex-col justify-center min-h-0 py-8">
+      {/* Main Content Area - Scrollable with safe vertical centering */}
+      <main className="flex-1 overflow-y-auto w-full hide-scrollbar flex flex-col">
         
-        <div className="w-full flex flex-col gap-10">
+        <div className="flex flex-col gap-8 py-6 my-auto">
           {/* Balance Section */}
           <div className="flex-none px-6">
             <div className="flex items-center gap-2 mb-3 ml-1">
