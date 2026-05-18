@@ -170,45 +170,45 @@ export function MobileAdminApp() {
       </header>
 
       {/* Main Content Area - Vertically Centered */}
-      <main className="flex-1 flex flex-col justify-center gap-6 min-h-0 py-6">
+      <main className="flex-1 flex flex-col justify-center min-h-0 py-8">
         
-        {/* Balance Section */}
-        <div className="flex-none px-6">
-          <div className="flex items-center gap-2 mb-3 ml-1">
-            <BarChart3 className="text-gray-900 h-5 w-5" />
-            <h2 className="text-lg font-black text-gray-900 uppercase tracking-wider">Saldos</h2>
-          </div>
-          <div className="bg-white rounded-3xl p-5 shadow-sm border border-stone-100 ring-1 ring-black/5 min-h-[120px] flex items-center justify-center">
-            {typeof balanceResponse === 'string' ? (
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-6 h-6 border-4 border-gray-100 border-t-gray-900 rounded-full animate-spin" />
-                <p className="text-gray-500 font-bold text-sm uppercase tracking-widest animate-pulse">{balanceResponse}</p>
-              </div>
-            ) : balanceResponse ? (
-              <div 
-                className="w-full text-center text-gray-800 font-bold text-lg leading-relaxed balance-content"
-                dangerouslySetInnerHTML={{ __html: balanceResponse.mensaje }}
-              />
-            ) : null}
-          </div>
-        </div>
-
-        {/* Inventory Entry Section - Horizontal Scroll */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center gap-2 mb-3 px-6 ml-1 flex-none">
-            <Truck className="text-green-600 h-5 w-5" />
-            <h2 className="text-lg font-black text-green-600 uppercase tracking-wider">Añadir Ingresos</h2>
+        <div className="w-full flex flex-col gap-10">
+          {/* Balance Section */}
+          <div className="flex-none px-6">
+            <div className="flex items-center gap-2 mb-3 ml-1">
+              <BarChart3 className="text-gray-900 h-5 w-5" />
+              <h2 className="text-lg font-black text-gray-900 uppercase tracking-wider">Saldos</h2>
+            </div>
+            <div className="bg-white rounded-3xl p-5 shadow-sm border border-stone-100 ring-1 ring-black/5 min-h-[120px] flex items-center justify-center">
+              {typeof balanceResponse === 'string' ? (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-6 h-6 border-4 border-gray-100 border-t-gray-900 rounded-full animate-spin" />
+                  <p className="text-gray-500 font-bold text-sm uppercase tracking-widest animate-pulse">{balanceResponse}</p>
+                </div>
+              ) : balanceResponse ? (
+                <div 
+                  className="w-full text-center text-gray-800 font-bold text-lg leading-relaxed balance-content"
+                  dangerouslySetInnerHTML={{ __html: balanceResponse.mensaje }}
+                />
+              ) : null}
+            </div>
           </div>
 
-          {/* Horizontal Scroll Container */}
-          <div className="flex-1 min-h-0 relative">
-            <div className="absolute inset-0 overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar flex items-center px-6 pb-4">
-              <div className="flex gap-4 h-full py-2">
+          {/* Inventory Entry Section - Horizontal Scroll */}
+          <div className="flex-none w-full">
+            <div className="flex items-center gap-2 mb-4 px-6 ml-1">
+              <Truck className="text-green-600 h-5 w-5" />
+              <h2 className="text-lg font-black text-green-600 uppercase tracking-wider">Añadir Ingresos</h2>
+            </div>
+
+            {/* Horizontal Scroll Container */}
+            <div className="w-full overflow-x-auto snap-x snap-mandatory hide-scrollbar flex px-6 pb-6 pt-2">
+              <div className="flex gap-5 min-h-[280px]">
                 {CARDS.map((card) => (
                   <div 
                     key={card.id} 
                     className={cn(
-                      "snap-center shrink-0 w-[75vw] max-w-[300px] h-full bg-white rounded-3xl shadow-lg border-2 border-transparent transition-all flex flex-col relative overflow-hidden",
+                      "snap-center shrink-0 w-[80vw] max-w-[320px] bg-white rounded-3xl shadow-xl border-2 border-transparent transition-all flex flex-col relative overflow-hidden",
                       card.focus
                     )}
                   >
@@ -223,7 +223,7 @@ export function MobileAdminApp() {
                         </h3>
                       </div>
 
-                      <div className="mt-6 relative">
+                      <div className="mt-8 relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 font-black text-2xl">+</span>
                         <input
                           type="number"
