@@ -5,6 +5,7 @@ import { SuccessModal } from './components/SuccessModal';
 import { SuccessModalFactura } from './components/SuccessModalFactura';
 import { InvoiceForm } from './components/InvoiceForm';
 import { AdminModal } from './components/AdminModal';
+import { MobileAdminApp } from './components/MobileAdminApp';
 import { Send, User, Settings, FileText, Package } from 'lucide-react';
 import { cn } from './lib/utils';
 
@@ -151,7 +152,14 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background selection:bg-rose-200 font-sans text-gray-900 overflow-hidden">
+    <>
+      {/* Mobile App View */}
+      <div className="md:hidden block">
+        <MobileAdminApp />
+      </div>
+
+      {/* Desktop App View */}
+      <div className="hidden md:flex h-screen flex-col bg-background selection:bg-rose-200 font-sans text-gray-900 overflow-hidden">
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/60 backdrop-blur-xl border-b border-gray-100/50 shadow-sm">
@@ -339,5 +347,6 @@ export default function App() {
         onClose={() => setShowAdmin(false)}
       />
     </div>
+    </>
   );
 }
