@@ -179,7 +179,7 @@ export function MobileAdminApp() {
       {/* Main Content Area - Scrollable with safe vertical centering */}
       <main className="flex-1 overflow-y-auto w-full hide-scrollbar flex flex-col">
         
-        <div className="flex flex-col gap-8 py-6 my-auto">
+        <div className="flex flex-col gap-8 pt-4 pb-6">
           {/* Balance Section */}
           <div className="flex-none px-6">
             <div className="flex items-center gap-2 mb-3 ml-1">
@@ -254,12 +254,12 @@ export function MobileAdminApp() {
       </main>
 
       {/* Fixed Bottom Button */}
-      <div className="flex-none p-6 pb-safe bg-white border-t border-gray-100 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+      <div className="flex-none p-4 pb-[max(env(safe-area-inset-bottom),1rem)] bg-white border-t border-gray-100 z-20 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
         <button
           onClick={registerEntry}
           disabled={isSubmitting}
           className={cn(
-            "w-full flex items-center justify-center gap-3 py-5 rounded-2xl text-white font-black text-xl shadow-xl transition-all active:scale-[0.98]",
+            "w-full flex items-center justify-center gap-3 py-4 rounded-2xl text-white font-black text-xl shadow-xl transition-all active:scale-[0.98]",
             isSubmitting ? "bg-stone-300 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 shadow-green-600/30"
           )}
         >
