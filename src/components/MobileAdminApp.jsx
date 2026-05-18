@@ -176,10 +176,10 @@ export function MobileAdminApp() {
         </div>
       </header>
 
-      {/* Main Content Area - Scrollable with safe vertical centering */}
-      <main className="flex-1 overflow-y-auto w-full hide-scrollbar flex flex-col">
+      {/* Main Content Area - Fixed, no vertical scroll */}
+      <main className="flex-1 overflow-hidden w-full flex flex-col justify-center">
         
-        <div className="flex flex-col gap-8 pt-4 pb-6">
+        <div className="flex flex-col gap-8">
           {/* Balance Section */}
           <div className="flex-none px-6">
             <div className="flex items-center gap-2 mb-3 ml-1">
