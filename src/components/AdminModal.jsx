@@ -15,6 +15,8 @@ export function AdminModal({ isOpen, onClose }) {
         paquetes_rosas: '',
         rosas_individuales: '',
         girasoles: '',
+        lilium: '',
+        flores_verano: ''
     });
 
     const handleUnlock = () => {
@@ -57,6 +59,8 @@ export function AdminModal({ isOpen, onClose }) {
                 paquetes_rosas: { principal: Number(inventoryData.paquetes_rosas) || 0 },
                 rosas_individuales: { principal: Number(inventoryData.rosas_individuales) || 0 },
                 girasoles: { principal: Number(inventoryData.girasoles) || 0 },
+                lilium: { principal: Number(inventoryData.lilium) || 0 },
+                flores_verano: { principal: Number(inventoryData.flores_verano) || 0 },
             }
         };
 
@@ -68,7 +72,7 @@ export function AdminModal({ isOpen, onClose }) {
             });
             if (res.ok) {
                 alert("Ingreso registrado correctamente");
-                setInventoryData({ paquetes_rosas: '', rosas_individuales: '', girasoles: '' });
+                setInventoryData({ paquetes_rosas: '', rosas_individuales: '', girasoles: '', lilium: '', flores_verano: '' });
             } else {
                 alert("Error al registrar ingreso");
             }
@@ -175,7 +179,7 @@ export function AdminModal({ isOpen, onClose }) {
                                                 <h3 className="font-extrabold text-2xl tracking-tight">Registrar Nueva Compra</h3>
                                             </div>
 
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                                 <div className="space-y-2">
                                                     <label className="text-xs font-black text-gray-500 uppercase tracking-widest ml-1">📦 Paquetes Rosas</label>
                                                     <input
@@ -204,6 +208,28 @@ export function AdminModal({ isOpen, onClose }) {
                                                         type="number"
                                                         name="girasoles"
                                                         value={inventoryData.girasoles}
+                                                        onChange={handleInventoryChange}
+                                                        className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-3 outline-none focus:border-green-500 transition-all text-lg font-bold"
+                                                        placeholder="0"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-gray-500 uppercase tracking-widest ml-1">🌸 Lilium</label>
+                                                    <input
+                                                        type="number"
+                                                        name="lilium"
+                                                        value={inventoryData.lilium}
+                                                        onChange={handleInventoryChange}
+                                                        className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-3 outline-none focus:border-green-500 transition-all text-lg font-bold"
+                                                        placeholder="0"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-xs font-black text-gray-500 uppercase tracking-widest ml-1">🌺 Verano</label>
+                                                    <input
+                                                        type="number"
+                                                        name="flores_verano"
+                                                        value={inventoryData.flores_verano}
                                                         onChange={handleInventoryChange}
                                                         className="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-3 outline-none focus:border-green-500 transition-all text-lg font-bold"
                                                         placeholder="0"
