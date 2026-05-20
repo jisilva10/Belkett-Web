@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Building2, User, DollarSign, ChevronDown } from 'lucide-react';
+import { Send, Building2, User, DollarSign, ChevronDown, BadgeCheck } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const ENTITIES = [
@@ -13,6 +13,7 @@ export function InvoiceForm({ onSuccess }) {
   const [formData, setFormData] = useState({
     entidad: '',
     nombre: '',
+    responsable: '',
     valor: ''
   });
   
@@ -68,6 +69,10 @@ export function InvoiceForm({ onSuccess }) {
       alert("Por favor ingresa el Nombre de la factura");
       return;
     }
+    if (!formData.responsable.trim()) {
+      alert("Por favor ingresa el Responsable");
+      return;
+    }
     if (!formData.valor || isNaN(Number(formData.valor))) {
       alert("Por favor ingresa un Valor válido");
       return;
@@ -79,6 +84,7 @@ export function InvoiceForm({ onSuccess }) {
       fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
       entidad: ENTITIES.find(e => e.id === formData.entidad)?.name || formData.entidad,
       nombre: formData.nombre,
+      responsable: formData.responsable,
       valor: Number(formData.valor)
     };
 
@@ -98,6 +104,7 @@ export function InvoiceForm({ onSuccess }) {
       setFormData({
         entidad: '',
         nombre: '',
+        responsable: '',
         valor: ''
       });
     } catch (error) {
@@ -163,13 +170,28 @@ export function InvoiceForm({ onSuccess }) {
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100 ring-1 ring-black/5 flex-1 flex flex-col justify-center">
             <label className="flex items-center gap-2 text-xs font-black text-rose-600 uppercase tracking-[0.2em] mb-3 ml-1">
               <User size={16} />
-              Nombre
+              Nombre de factura
             </label>
             <input
               type="text"
               value={formData.nombre}
               onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-              placeholder="Nombre de la factura..."
+              placeholder="Ej. Compra de insumos..."
+              className="w-full bg-stone-50/30 border-0 border-b-2 border-stone-100 focus:border-rose-500 focus:ring-0 px-4 py-3 text-2xl outline-none transition-all placeholder:text-stone-200 font-bold"
+            />
+          </div>
+
+          {/* Responsable */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100 ring-1 ring-black/5 flex-1 flex flex-col justify-center">
+            <label className="flex items-center gap-2 text-xs font-black text-rose-600 uppercase tracking-[0.2em] mb-3 ml-1">
+              <BadgeCheck size={16} />
+              Responsable
+            </label>
+            <input
+              type="text"
+              value={formData.responsable}
+              onChange={(e) => setFormData(prev => ({ ...prev, responsable: e.target.value }))}
+              placeholder="Nombre del responsable..."
               className="w-full bg-stone-50/30 border-0 border-b-2 border-stone-100 focus:border-rose-500 focus:ring-0 px-4 py-3 text-2xl outline-none transition-all placeholder:text-stone-200 font-bold"
             />
           </div>

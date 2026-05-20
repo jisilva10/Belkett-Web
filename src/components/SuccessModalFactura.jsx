@@ -48,6 +48,9 @@ export function SuccessModalFactura({ isOpen, onClose, data }) {
                                         <span className="text-gray-400 font-bold uppercase tracking-wider">Entidad</span>
                                         <span className="font-bold text-gray-900 text-right">{data.entidad}</span>
 
+                                        <span className="text-gray-400 font-bold uppercase tracking-wider">Responsable</span>
+                                        <span className="font-bold text-gray-900 text-right">{data.responsable}</span>
+
                                         <span className="text-gray-400 font-bold uppercase tracking-wider">Nombre</span>
                                         <span className="font-bold text-gray-900 text-right">{data.nombre}</span>
 
