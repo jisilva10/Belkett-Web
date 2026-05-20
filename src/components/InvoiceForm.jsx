@@ -80,8 +80,12 @@ export function InvoiceForm({ onSuccess }) {
 
     setIsSubmitting(true);
 
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const localDateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
     const payload = {
-      fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      fecha: localDateStr,
       entidad: ENTITIES.find(e => e.id === formData.entidad)?.name || formData.entidad,
       nombre: formData.nombre,
       responsable: formData.responsable,
