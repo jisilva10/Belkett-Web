@@ -66,7 +66,7 @@ export function InvoiceForm({ onSuccess }) {
       return;
     }
     if (!formData.nombre.trim()) {
-      alert("Por favor ingresa el Nombre de la factura");
+      alert("Por favor ingresa el Cliente o Consumidor");
       return;
     }
     if (!formData.responsable.trim()) {
@@ -170,13 +170,13 @@ export function InvoiceForm({ onSuccess }) {
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100 ring-1 ring-black/5 flex-1 flex flex-col justify-center">
             <label className="flex items-center gap-2 text-xs font-black text-rose-600 uppercase tracking-[0.2em] mb-3 ml-1">
               <User size={16} />
-              Nombre de factura
+              Cliente / Consumidor
             </label>
             <input
               type="text"
               value={formData.nombre}
               onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
-              placeholder="Ej. Compra de insumos..."
+              placeholder="Ej. Consumidor Final..."
               className="w-full bg-stone-50/30 border-0 border-b-2 border-stone-100 focus:border-rose-500 focus:ring-0 px-4 py-3 text-2xl outline-none transition-all placeholder:text-stone-200 font-bold"
             />
           </div>
