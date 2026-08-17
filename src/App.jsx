@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ModeToggle } from './components/ModeToggle';
 import { FlowerInputGroup } from './components/FlowerInputGroup';
 import { SuccessModal } from './components/SuccessModal';
@@ -11,7 +11,26 @@ import { cn } from './lib/utils';
 
 import logo from './assets/logo.png';
 
+// Coincide con el breakpoint `md` de Tailwind. Se monta UNA sola vista:
+// antes ambas convivían (la móvil oculta por CSS) y cada apertura disparaba
+// dos consultas de saldo al webhook.
+function useIsMobile() {
+  const query = '(max-width: 767px)';
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia(query).matches);
+
+  useEffect(() => {
+    const mql = window.matchMedia(query);
+    const onChange = (e) => setIsMobile(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+
+  return isMobile;
+}
+
 export default function App() {
+  const isMobile = useIsMobile();
   const [mode, setMode] = useState('recibo');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -54,17 +73,45 @@ export default function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Send 0 if field is empty or not visible in current mode
+    const getNumber = (val) => val === '' ? 0 : Number(val);
+
     // Validation
     if (!formData.responsable.trim()) {
       alert("Por favor ingresa el nombre del Responsable");
       return;
     }
 
+    // Un envío en ceros no es un dato: en modo Cierre n8n lo lee como
+    // "dejé 0 flores" y arrasa el saldo de todo el inventario.
+    const categorias = [
+      formData.rosas_individuales,
+      formData.paquetes_rosas,
+      formData.girasoles,
+      formData.lilium,
+      formData.flores_verano
+    ];
+    const totalIngresado = categorias.reduce((sum, d) =>
+      sum + getNumber(d.principal) + getNumber(d.vendido) + getNumber(d.seguidor) + getNumber(d.danado), 0);
+
+    if (totalIngresado === 0) {
+      alert("No ingresaste ninguna cantidad. Llena al menos un campo antes de enviar.");
+      return;
+    }
+
+    // En Cierre, un conteo todo en cero pone el inventario en 0. Debe ser deliberado.
+    if (mode === 'cierre' && categorias.every(d => getNumber(d.principal) === 0)) {
+      const ok = window.confirm(
+        "ATENCIÓN: estás cerrando con 0 flores dejadas de TODOS los tipos.\n\n" +
+        "Esto va a poner el inventario completo en cero.\n\n" +
+        "¿De verdad no quedó ninguna flor?"
+      );
+      if (!ok) return;
+    }
+
     setIsSubmitting(true);
 
     // Construct JSON Payload
-    // Send 0 if field is empty or not visible in current mode
-    const getNumber = (val) => val === '' ? 0 : Number(val);
 
     const payload = {
       fecha: new Date().toISOString().replace('T', ' ').substring(0, 19), // YYYY-MM-DD HH:mm:ss approx
@@ -151,15 +198,14 @@ export default function App() {
     }));
   };
 
+  if (isMobile) {
+    return <MobileAdminApp />;
+  }
+
   return (
     <>
-      {/* Mobile App View */}
-      <div className="md:hidden block">
-        <MobileAdminApp />
-      </div>
-
       {/* Desktop App View */}
-      <div className="hidden md:flex h-screen flex-col bg-background selection:bg-rose-200 font-sans text-gray-900 overflow-hidden">
+      <div className="flex h-screen flex-col bg-background selection:bg-rose-200 font-sans text-gray-900 overflow-hidden">
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/60 backdrop-blur-xl border-b border-gray-100/50 shadow-sm">

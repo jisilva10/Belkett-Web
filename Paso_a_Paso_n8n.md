@@ -1,5 +1,54 @@
 # Guía Paso a Paso: Actualización de Nodos en n8n
 
+> Los bloques de código de este archivo están **sincronizados con el workflow
+> `Belkett Web` que está corriendo** (n8n id `xv5EFXvhMzUmUJ0s`). Si cambias un
+> nodo en n8n, actualiza también este archivo — si se desincronizan, cualquiera
+> que depure el sistema va a leer código que no es el que se está ejecutando.
+
+---
+
+## Incidente 17/08/2026 — el inventario se puso en cero
+
+**Qué pasó.** A la 01:12:13 se registró el cierre correcto (ejecución `3637`):
+40 paquetes + 12 rosas, 174 girasoles, 11 lilium, 348 verano. Saldos quedaron en
+492 / 174 / 11 / 348.
+
+63 segundos después, a la 01:13:16, llegó **otro cierre con todos los campos en
+cero** (ejecución `3638`). `Obtener el ultimo Saldo` lo interpretó literalmente
+como "dejé 0 flores de todo" y calculó `cuadre: -492`, `cuadre_girasoles: -174`,
+`cuadre_lilium: -11`, `cuadre_verano: -348`. Como la columna `SALDOS` de la hoja
+se calcula sumando el CUADRE, **todo el inventario quedó en 0**.
+
+**Por qué el modal mostraba 0 y el kardex seguía calculando bien.** Los dos nodos
+que leen el saldo lo hacían distinto:
+
+- `Obtener el ultimo Saldo` usaba `f["SALDOS"] || f["Saldos"]`. Como `0` es
+  *falsy*, el `||` lo descartaba y saltaba la fila en cero — por accidente eso
+  protegió al kardex.
+- `Buscar y Formatear Saldo1` (el que responde al modal admin) leía
+  `f["SALDOS"]` directo, así que el `0` sí pasaba y el modal reportaba 0.
+
+**Qué se corrigió** (ya aplicado en producción):
+
+1. `Adaptador Web a Variables N8N` emitía la clave `dano_verano` pero
+   `Obtener el ultimo Saldo` leía `danado_verano` → **el daño de flores de verano
+   nunca se restaba** y reaparecía como descuadre (−108 y −13 el 16/08). Corregido
+   a `danado_verano`.
+2. `Obtener el ultimo Saldo`: se agregó el guard `cierreVacio`. Un cierre sin
+   nada dejado, sin ventas, sin daño y sin entradas ya no calcula cuadre; deja el
+   saldo intacto y marca la fila como `ENVIO VACIO IGNORADO`. Un cierre legítimo
+   donde se vendió todo (dejo 0 pero hay ventas) **sí** se procesa normal.
+3. Se reemplazó la lectura de saldos por la función `pick()`, que acepta el `0`
+   como valor válido en ambos nodos.
+4. `Buscar y Formatear Saldo1` ahora muestra el desglose físico real de las rosas
+   ("492 unidades (40 paquetes + 12 sueltas)"), tomado del último conteo
+   registrado — no una división teórica, que daría "41 paquetes".
+
+En la web app (`src/App.jsx`) se agregó la validación que impide enviar el
+formulario en ceros, que es lo que originó todo.
+
+---
+
 Abre cada uno de los siguientes nodos en tu lienzo de n8n y realiza los cambios que se indican a continuación.
 
 ---
@@ -199,11 +248,11 @@ return [{
         recibe_paquetes: recibe_paq, recibe_individual: recibe_ind, recibe_girasoles: recibe_giras, recibe_lilium: recibe_lilium, recibe_verano: recibe_verano,
         produccion_paquetes: prod_paq, produccion_individual: prod_ind, produccion_girasoles: prod_giras, produccion_lilium: prod_lilium, produccion_verano: prod_verano,
         venta_paquetes: venta_paq, venta_individual: venta_ind, venta_girasoles: venta_giras, venta_lilium: venta_lilium, venta_verano: venta_verano,
-        danado_paquetes: dano_paq, danado_individual: dano_ind, danado_girasoles: dano_giras, danado_lilium: dano_lilium, dano_verano: dano_verano,
+        danado_paquetes: dano_paq, danado_individual: dano_ind, danado_girasoles: dano_giras, danado_lilium: dano_lilium, danado_verano: dano_verano,
         seguidor_individual: seguidor_ind,
         deja_paquetes: deja_paq, deja_individual: deja_ind, deja_girasoles: deja_giras, deja_lilium: deja_lilium, deja_verano: deja_verano
     }
-}];
+}]
 ```
 
 ---
@@ -220,6 +269,17 @@ return [{
 // CONFIGURACIÓN Y LECTURA DE DATOS
 // =============================================
 const NODO_SHEETS = "Code in JavaScript10"; 
+
+// Devuelve el primer valor presente entre varias claves posibles.
+// OJO: no usar `a || b` para leer saldos, porque el 0 es falsy y se salta.
+function pick(f, ...keys) {
+    for (const k of keys) {
+        const v = f[k];
+        if (v !== undefined && v !== null && v !== "") return v;
+    }
+    return undefined;
+}
+
 const NODO_ORIGEN = "Adaptador Web a Variables N8N"; 
 
 const COL_SALDOS_ROSAS = "SALDOS";
@@ -257,7 +317,7 @@ let foundSaldoVerano = false, foundDejoVerano = false;
 for (let i = filas.length - 1; i >= 0; i--) {
     const f = filas[i];
     if (!foundSaldoRosas) { 
-        const s = f[COL_SALDOS_ROSAS] || f["Saldos"]; 
+        const s = pick(f, COL_SALDOS_ROSAS, "Saldos"); 
         if (s != null && s !== "" && !isNaN(Number(s))) { saldoAnteriorRosas = Number(s); foundSaldoRosas = true; } 
     }
     if (!foundDejoRosas) { 
@@ -265,7 +325,7 @@ for (let i = filas.length - 1; i >= 0; i--) {
         if ((p != null && p !== "") || (r != null && r !== "")) { ultimoDejoPaq = Number(p)||0; ultimoDejoInd = Number(r)||0; foundDejoRosas = true; } 
     }
     if (!foundSaldoGiras) { 
-        const sG = f[COL_SALDO_GIRASOLES] || f["Saldo Girasoles"]; 
+        const sG = pick(f, COL_SALDO_GIRASOLES, "Saldo Girasoles"); 
         if (sG != null && sG !== "" && !isNaN(Number(sG))) { saldoAnteriorGiras = Number(sG); foundSaldoGiras = true; } 
     }
     if (!foundDejoGiras) { 
@@ -273,7 +333,7 @@ for (let i = filas.length - 1; i >= 0; i--) {
         if (dG != null && dG !== "") { ultimoDejoGiras = Number(dG)||0; foundDejoGiras = true; } 
     }
     if (!foundSaldoLilium) { 
-        const sL = f[COL_SALDO_LILIUM] || f["Saldo Lilium"]; 
+        const sL = pick(f, COL_SALDO_LILIUM, "Saldo Lilium"); 
         if (sL != null && sL !== "" && !isNaN(Number(sL))) { saldoAnteriorLilium = Number(sL); foundSaldoLilium = true; } 
     }
     if (!foundDejoLilium) { 
@@ -281,7 +341,7 @@ for (let i = filas.length - 1; i >= 0; i--) {
         if (dL != null && dL !== "") { ultimoDejoLilium = Number(dL)||0; foundDejoLilium = true; } 
     }
     if (!foundSaldoVerano) { 
-        const sV = f[COL_SALDO_VERANO] || f["Saldo Verano"]; 
+        const sV = pick(f, COL_SALDO_VERANO, "Saldo Verano"); 
         if (sV != null && sV !== "" && !isNaN(Number(sV))) { saldoAnteriorVerano = Number(sV); foundSaldoVerano = true; } 
     }
     if (!foundDejoVerano) { 
@@ -347,7 +407,13 @@ if (hayEntrada) {
     }
 }
 
-if (hayDejo) {
+// GUARD: un cierre con TODO en cero (formulario vacio / envio duplicado) no es
+// un conteo real. Si se deja pasar, el cuadre negativo pone el inventario en 0.
+const totalDejo = dejoPaq + dejoInd + dejoGiras + dejoLilium + dejoVerano;
+const totalSalidas = totalSalidasR + totalSalidasG + totalSalidasL + totalSalidasV;
+const cierreVacio = hayDejo && totalDejo === 0 && totalSalidas === 0 && !hayEntrada;
+
+if (hayDejo && !cierreVacio) {
     const teoricoR = saldoAnteriorRosas + ((excelPaq*12) + excelInd) - totalSalidasR;
     outCuadreRosas = ((dejoPaq * 12) + dejoInd) - teoricoR;
     const teoricoG = saldoAnteriorGiras + excelGiras - totalSalidasG;
@@ -373,7 +439,10 @@ return [{
         chat_id: datosInput.chat_id,
         hoja_actual: hojaEnPalabras,
         fecha: datosInput.fecha,
-        observacion: datosInput.observacion,
+        observacion: cierreVacio
+            ? `${datosInput.observacion} - ENVIO VACIO IGNORADO (no se toco el saldo)`
+            : datosInput.observacion,
+        envio_vacio: cierreVacio,
         ayudante: datosInput.ayudante,
         
         // Entradas Excel
@@ -418,7 +487,7 @@ return [{
         produccion_lilium_salida: totalSalidasL,
         produccion_verano_salida: totalSalidasV
     }
-}];
+}]
 ```
 
 ---
@@ -565,9 +634,22 @@ for (let i = filas.length - 1; i >= 0; i--) {
 let titulo = "";
 let cuerpo = "";
 
+// Las rosas se guardan en unidades sueltas (1 paquete = 12), pero fisicamente
+// estan en paquetes + sueltas. Mostramos el ultimo conteo REAL registrado en el
+// cierre, no una division teorica: 492 unidades son "40 paq + 12", no "41 paq".
+let ultPaq = 0, ultSueltas = 0, foundConteo = false;
+for (let i = filas.length - 1; i >= 0 && !foundConteo; i--) {
+    const p = Number(filas[i]["PAQUETES DEJADOS"]) || 0;
+    const r = Number(filas[i]["ROSAS DEJADAS"]) || 0;
+    if (p > 0 || r > 0) { ultPaq = p; ultSueltas = r; foundConteo = true; }
+}
+const desgloseRosas = (foundConteo && (ultPaq * 12 + ultSueltas) === saldoRosas)
+    ? `${ultPaq} paquetes + ${ultSueltas} sueltas`
+    : `${Math.floor(saldoRosas / 12)} paq + ${saldoRosas % 12} aprox.`;
+
 if (producto === "rosas") {
     titulo = "🌹 Saldo de Rosas";
-    cuerpo = `Actualmente quedan <b>${saldoRosas}</b> unidades en inventario.`;
+    cuerpo = `Actualmente quedan <b>${saldoRosas}</b> unidades (${desgloseRosas}).`;
 } else if (producto === "girasoles") {
     titulo = "🌻 Saldo de Girasoles";
     cuerpo = `Actualmente quedan <b>${saldoGiras}</b> unidades en inventario.`;
@@ -579,7 +661,7 @@ if (producto === "rosas") {
     cuerpo = `Actualmente quedan <b>${saldoVerano}</b> unidades en inventario.`;
 } else {
     titulo = "📊 Reporte General de Saldos";
-    cuerpo = `🌹 Rosas: <b>${saldoRosas}</b> unidades<br>🌻 Girasoles: <b>${saldoGiras}</b> unidades<br>🌸 Lilium: <b>${saldoLilium}</b> unidades<br>🌺 Verano: <b>${saldoVerano}</b> unidades`;
+    cuerpo = `🌹 Rosas: <b>${saldoRosas}</b> unidades (${desgloseRosas})<br>🌻 Girasoles: <b>${saldoGiras}</b> unidades<br>🌸 Lilium: <b>${saldoLilium}</b> unidades<br>🌺 Verano: <b>${saldoVerano}</b> unidades`;
 }
 
 return [{ 
@@ -591,5 +673,5 @@ return [{
         valorLilium: saldoLilium,
         valorVerano: saldoVerano
     } 
-}];
+}]
 ```

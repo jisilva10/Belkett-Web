@@ -50,6 +50,13 @@ export function AdminModal({ isOpen, onClose }) {
     };
 
     const registerEntry = async () => {
+        const total = Object.values(inventoryData)
+            .reduce((sum, v) => sum + (Number(v) || 0), 0);
+        if (total === 0) {
+            alert("No ingresaste ninguna cantidad.");
+            return;
+        }
+
         setIsSubmitting(true);
         const payload = {
             fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
@@ -73,6 +80,7 @@ export function AdminModal({ isOpen, onClose }) {
             if (res.ok) {
                 alert("Ingreso registrado correctamente");
                 setInventoryData({ paquetes_rosas: '', rosas_individuales: '', girasoles: '', lilium: '', flores_verano: '' });
+                fetchBalance('ambos');
             } else {
                 alert("Error al registrar ingreso");
             }

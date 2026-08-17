@@ -67,6 +67,13 @@ export function MobileAdminApp() {
   }, [isAuthenticated]);
 
   const registerEntry = async () => {
+    const total = Object.values(inventoryData)
+      .reduce((sum, v) => sum + (Number(v) || 0), 0);
+    if (total === 0) {
+      alert("No ingresaste ninguna cantidad.");
+      return;
+    }
+
     setIsSubmitting(true);
     const payload = {
       fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
