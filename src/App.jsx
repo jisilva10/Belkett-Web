@@ -11,6 +11,13 @@ import { cn } from './lib/utils';
 
 import logo from './assets/logo.png';
 
+// n8n contesta recién cuando terminó de escribir en la hoja. Si Google Sheets
+// se cuelga, n8n se rinde a los ~130 s (30/09: ejecuciones 4796, 4797, 4800 y
+// 4801). Esperamos un poco más que eso para que la web sepa SIEMPRE si quedó
+// guardado o no, en vez de adivinar.
+const LIMITE_ENVIO_MS = 150000;
+const AVISO_LENTO_MS = 12000;
+
 // Coincide con el breakpoint `md` de Tailwind. Se monta UNA sola vista:
 // antes ambas convivían (la móvil oculta por CSS) y cada apertura disparaba
 // dos consultas de saldo al webhook.
@@ -33,6 +40,8 @@ export default function App() {
   const isMobile = useIsMobile();
   const [mode, setMode] = useState('recibo');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSlow, setIsSlow] = useState(false);
+  const [sendFailed, setSendFailed] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [lastSubmission, setLastSubmission] = useState(null);
@@ -169,23 +178,40 @@ export default function App() {
 
     console.log("Payload:", payload);
 
+    // Antes se mostraba "éxito" pasara lo que pasara. Ahora solo si n8n
+    // confirma; si no, los números se quedan en pantalla para reenviarlos.
+    const controller = new AbortController();
+    const cortar = setTimeout(() => controller.abort(), LIMITE_ENVIO_MS);
+    const avisar = setTimeout(() => setIsSlow(true), AVISO_LENTO_MS);
+    let guardado = false;
+
     try {
-      await fetch(import.meta.env.VITE_WEBHOOK_URL, {
+      const res = await fetch(import.meta.env.VITE_WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: controller.signal
       });
+      guardado = res.ok;
     } catch (error) {
       console.error("Webhook error:", error);
+    } finally {
+      clearTimeout(cortar);
+      clearTimeout(avisar);
+      setIsSlow(false);
+      setIsSubmitting(false);
     }
 
-    // Reset Form (optional, maybe keep responsible?)
+    if (!guardado) {
+      setSendFailed(true);
+      return;
+    }
+
     setLastSubmission(payload);
     setShowSuccess(true);
-    setIsSubmitting(false);
 
     // Reset numeric inputs
     setFormData(prev => ({
@@ -227,6 +253,7 @@ export default function App() {
             <div className="flex justify-center flex-1 order-3 md:order-2 md:absolute md:left-1/2 md:-translate-x-1/2 w-full md:w-auto">
               <div className="flex items-center bg-gray-100/80 p-1.5 rounded-2xl border border-gray-200/50 shadow-inner">
                 <button
+                  disabled={isSubmitting}
                   onClick={() => setCurrentView('inventario')}
                   className={cn(
                     "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
@@ -239,6 +266,7 @@ export default function App() {
                   Inventario
                 </button>
                 <button
+                  disabled={isSubmitting}
                   onClick={() => setCurrentView('facturas')}
                   className={cn(
                     "flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all",
@@ -256,7 +284,7 @@ export default function App() {
             {/* Mode & Admin (Right) */}
             <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-4 order-2 md:order-3">
               {currentView === 'inventario' ? (
-                <ModeToggle currentMode={mode} onModeChange={setMode} />
+                <ModeToggle currentMode={mode} onModeChange={setMode} disabled={isSubmitting} />
               ) : (
                 <div className="w-[200px] hidden md:block"></div> /* Placeholder to keep header balanced */
               )}
@@ -276,7 +304,10 @@ export default function App() {
 
       <main className="flex-1 overflow-y-auto px-6 pt-6 pb-20 space-y-6">
         {currentView === 'inventario' ? (
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit}>
+            {/* Mientras se envía nada se puede tocar: el 30/09 cambiaron de
+                modo con el envío colgado y los mismos números salieron como Recibo. */}
+            <fieldset disabled={isSubmitting} className="space-y-6 min-w-0">
             {/* Responsable Row - BALANCED PREMIUM */}
             <div className="w-full">
               <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-100 max-w-2xl mx-auto ring-1 ring-black/5">
@@ -346,7 +377,13 @@ export default function App() {
             </div>
 
             {/* Submit Button */}
-            <div className="pt-6 pb-12 flex justify-center">
+            <div className="pt-6 pb-12 flex flex-col items-center gap-4">
+              {isSlow && (
+                <p className="w-full max-w-md text-center text-base font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
+                  Está tardando más de lo normal.<br />
+                  No cierres la página ni cambies nada: en un momento te decimos si se guardó.
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -365,6 +402,7 @@ export default function App() {
                 )}
               </button>
             </div>
+            </fieldset>
           </form>
         ) : (
           <InvoiceForm 
@@ -375,6 +413,29 @@ export default function App() {
           />
         )}
       </main>
+
+      {sendFailed && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div role="alertdialog" className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 text-center space-y-4">
+            <div className="text-5xl">⚠️</div>
+            <h2 className="text-3xl font-black text-red-600">No se guardó</h2>
+            <p className="text-lg text-gray-700">
+              El sistema no respondió y este envío <b>no quedó registrado</b>.
+            </p>
+            <p className="text-lg text-gray-700">
+              Tus números siguen en pantalla. Revisa que el modo sea el correcto
+              y vuelve a presionar <b>Enviar Inventario</b>.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSendFailed(false)}
+              className="w-full py-4 rounded-2xl bg-gray-900 hover:bg-black text-white font-black text-xl"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
 
       <SuccessModal
         isOpen={showSuccess}

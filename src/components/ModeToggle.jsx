@@ -8,9 +8,9 @@ const modes = [
     { id: 'cierre', label: 'Cierre', icon: Moon, color: 'bg-purple-600' },
 ];
 
-export function ModeToggle({ currentMode, onModeChange }) {
+export function ModeToggle({ currentMode, onModeChange, disabled = false }) {
     return (
-        <div className="flex p-1 bg-white/40 backdrop-blur-md rounded-2xl border border-white/40 shadow-sm mx-auto max-w-md mt-0">
+        <div className={cn("flex p-1 bg-white/40 backdrop-blur-md rounded-2xl border border-white/40 shadow-sm mx-auto max-w-md mt-0", disabled && "opacity-50 pointer-events-none")}>
             {modes.map((mode) => {
                 const isActive = currentMode === mode.id;
                 const Icon = mode.icon;
@@ -18,6 +18,7 @@ export function ModeToggle({ currentMode, onModeChange }) {
                 return (
                     <button
                         key={mode.id}
+                        disabled={disabled}
                         onClick={() => onModeChange(mode.id)}
                         className={cn(
                             "relative flex-1 flex items-center justify-center gap-2 py-3 px-2 rounded-xl text-sm font-bold transition-all duration-300",

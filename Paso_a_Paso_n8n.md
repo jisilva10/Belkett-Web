@@ -7,6 +7,35 @@
 
 ---
 
+## Incidente 30/09/2026 — "se queda en Enviando..." y después descuadra
+
+**Qué pasó.** Entre 15:57 y 16:39 cuatro envíos (ejecuciones `4796`, `4797`,
+`4800`, `4801`) se quedaron esperando a Google Sheets: la conexión no respondía
+y n8n se rindió a los ~128 s con `The connection timed out` (en `Get row(s) in
+sheet5` o en `Append row in Inventario del mes2`). Ninguno escribió su fila.
+Ya había pasado el 27/09 (`4734`) y en Facturas el 30/09 00:29 (`4787`).
+
+El webhook responde en modo `lastNode`, así que la web se quedaba en
+"Enviando..." esos 2 minutos y, cuando n8n devolvía el error, mostraba igual
+"¡Enviado!" porque no revisaba la respuesta. Mientras tanto se podía cambiar de
+modo con los números puestos: la producción de Maribel (164/20/2/22) se reenvió
+como **Recibo** (`4802`, cuadre −419) y el recibo de Roxana (`4799`) salió con
+−203 porque el cierre con daño de las 16:03 nunca se registró. Las filas malas
+se borraron a mano y el cierre se reenvió (`4804`, cuadre 0).
+
+**Qué se corrigió** (web, `src/App.jsx` y `ModeToggle.jsx`):
+
+1. Mientras envía, el formulario, el modo y las pestañas quedan bloqueados.
+2. La web espera hasta 150 s (más que los ~130 s de n8n) y solo dice "¡Enviado!"
+   si n8n contesta OK. Si no, sale "No se guardó" y los números quedan en
+   pantalla para reenviar.
+3. A los 12 s avisa "Está tardando más de lo normal, no cierres ni cambies nada".
+
+El cuelgue con Google es intermitente y está del lado del servidor de n8n; esto
+no lo evita, pero ya no puede pasar sin que se enteren.
+
+---
+
 ## Incidente 17/08/2026 — el inventario se puso en cero
 
 **Qué pasó.** A la 01:12:13 se registró el cierre correcto (ejecución `3637`):
