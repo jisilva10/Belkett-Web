@@ -14,7 +14,10 @@ export async function guardarFactura(body, ahora = new Date()) {
   const hoja = `${mes} ${anio}`;
   const fila = {
     Fecha: body.fecha,
-    Responsable: body.responsable,
+    // Los totales por persona (SUMIF "Roxana", "Nayla"...) no cuentan «ROXANA »
+    // con espacio al final: en octubre se perdían ~$990 de Roxana. Mayúsculas
+    // da igual, el espacio no. n8n lo guardaba tal cual; aquí se limpia.
+    Responsable: typeof body.responsable === 'string' ? body.responsable.trim() : body.responsable,
     Entidad: body.entidad,
     Nombre: body.nombre,
     Valor: body.valor,

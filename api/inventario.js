@@ -2,7 +2,7 @@
 // Recibe lo que manda el formulario (Recibo, Producción, Cierre o el Ingreso
 // del admin), calcula el cuadre contra el último saldo y agrega la fila.
 // Solo contesta OK cuando la fila quedó escrita: la web se fía de eso.
-import { leer, comoObjetos, agregarFila } from './_lib/google.js';
+import { leer, comoObjetos, agregarFila, HojaNoExiste } from './_lib/google.js';
 import { adaptador, obtenerUltimoSaldo, filaParaLaHoja } from './_lib/inventario.js';
 import { abrirMesInventario } from './_lib/meses.js';
 import { avisar, rellenar } from './_lib/telegram.js';
@@ -10,26 +10,27 @@ import * as plantillas from './_lib/plantillas.js';
 import { libros, chats } from './_lib/config.js';
 import { registrar } from './_lib/registro.js';
 
-async function hojaDeConfig() {
-  const config = comoObjetos(await leer(libros.inventario(), 'config', 'A1:B3'));
-  return config.find((f) => f.w === 'hoja_actual')?.Value;
-}
-
 export async function guardar(body, ahora = new Date()) {
   const datosInput = adaptador(body, ahora);
 
-  // El primer envío del mes puede llegar antes que el cron (el cierre de las
-  // 00:30): en ese caso se abre el mes aquí mismo y se sigue.
-  let hoja = await hojaDeConfig();
-  if (hoja !== datosInput.hoja_actual) {
+  // n8n buscaba el saldo anterior en la hoja que decía «config»!B2, que su
+  // cron cambiaba cada mes. Aquí se lee directo la hoja del mes en hora de
+  // Quito (lo mismo que decía config cualquier día normal). El primer envío
+  // del mes puede llegar antes que el cron (el cierre de las 00:30): si la
+  // hoja no existe se abre el mes aquí mismo y se sigue.
+  const hoja = datosInput.hoja_actual;
+  let contenido;
+  try {
+    contenido = await leer(libros.inventario(), hoja);
+  } catch (err) {
+    if (!(err instanceof HojaNoExiste)) throw err;
     await abrirMesInventario(ahora);
-    hoja = await hojaDeConfig();
+    contenido = await leer(libros.inventario(), hoja);
   }
 
-  const filas = comoObjetos(await leer(libros.inventario(), hoja, 'A:DJ'));
-  const saldo = obtenerUltimoSaldo(datosInput, filas, ahora);
+  const saldo = obtenerUltimoSaldo(datosInput, comoObjetos(contenido), ahora);
   const fila = filaParaLaHoja(saldo);
-  await agregarFila(libros.inventario(), saldo.hoja_actual, 1, 'AY', fila);
+  await agregarFila(libros.inventario(), hoja, 1, 'AY', fila, contenido);
 
   // Ya quedó guardado; si Telegram falla no se le dice a la chica que no se
   // guardó (en n8n pasaba eso y reenviaban).

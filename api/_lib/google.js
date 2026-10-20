@@ -67,9 +67,16 @@ async function llamar(url, { method = 'GET', body, limite, intentos = 1 } = {}) 
       // Pasa cuando la hoja del mes todavía no se ha creado.
       if (res.status === 400 && /Unable to parse range/i.test(mensaje)) throw new HojaNoExiste(mensaje);
       const err = new Error(`Google Sheets: ${mensaje}`);
-      err.reintentable = res.status === 429 || res.status >= 500;
+      err.limite = res.status === 429;
+      err.reintentable = res.status >= 500;
       throw err;
     } catch (err) {
+      // 429 = Google pide esperar (60 lecturas por minuto). No ejecutó nada,
+      // así que se reintenta siempre, también al escribir, con más paciencia.
+      if (err.limite && i <= 3) {
+        await new Promise((r) => setTimeout(r, 3000 * 2 ** (i - 1)));
+        continue;
+      }
       const reintentable = err.reintentable || err.name === 'TimeoutError' || err.name === 'TypeError';
       if (i >= intentos || !reintentable) throw err;
       await new Promise((r) => setTimeout(r, 800 * i));
@@ -112,15 +119,17 @@ export function comoObjetos(valores, filaEncabezado = 0) {
 // (FECHA, OBSERVACION y AYUDANTE salen cuatro veces en el inventario) se llena
 // en todas. Las columnas que no vienen quedan intactas: ahí están las
 // fórmulas de saldo.
-export async function agregarFila(libro, hoja, filaEncabezado, ultimaColumna, valores) {
-  const contenido = await leer(libro, hoja, undefined, 'FORMATTED_VALUE');
+// `contenido` es opcional: si quien llama ya leyó la hoja entera, se reusa
+// para no gastar otra lectura.
+export async function agregarFila(libro, hoja, filaEncabezado, ultimaColumna, valores, contenido) {
+  contenido ??= await leer(libro, hoja);
   const encabezado = (contenido[filaEncabezado - 1] || []).slice(0, columnaANumero(ultimaColumna));
   const faltan = Object.keys(valores).filter((k) => !encabezado.includes(k));
   if (faltan.length) throw new Error(`La hoja «${hoja}» no tiene las columnas: ${faltan.join(', ')}`);
   const fila = encabezado.map((col) => (col in valores ? valores[col] : null));
   const siguiente = contenido.length + 1;
 
-  const { sheetId } = (await hojas(libro)).find((h) => h.title === hoja);
+  const sheetId = await idDeHoja(libro, hoja);
   await lote(libro, [{ appendDimension: { sheetId, dimension: 'ROWS', length: 1 } }]);
   await escribir(libro, hoja, `A${siguiente}:${ultimaColumna}${siguiente}`, [fila]);
   return { fila: siguiente };
@@ -141,9 +150,26 @@ export async function escribir(libro, hoja, celdas, valores) {
   return llamar(url, { method: 'PUT', body: { values: valores }, limite: LIMITE_ESCRITURA_MS });
 }
 
+// El número interno de una pestaña no cambia: se guarda mientras la función
+// siga viva para no pedirlo en cada envío.
+const ids = new Map();
+export async function idDeHoja(libro, hoja) {
+  const clave = `${libro}/${hoja}`;
+  if (!ids.has(clave)) {
+    for (const h of await hojas(libro)) ids.set(`${libro}/${h.title}`, h.sheetId);
+  }
+  return ids.get(clave);
+}
+
 export async function hojas(libro) {
   const json = await llamar(`${API}/${libro}?fields=sheets.properties`, { limite: LIMITE_LECTURA_MS, intentos: 3 });
   return json.sheets.map((s) => s.properties);
+}
+
+export async function borrarHoja(libro, hoja) {
+  const sheetId = await idDeHoja(libro, hoja);
+  await lote(libro, [{ deleteSheet: { sheetId } }]);
+  ids.delete(`${libro}/${hoja}`);
 }
 
 export async function lote(libro, requests) {
