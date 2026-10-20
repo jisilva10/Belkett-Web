@@ -161,6 +161,11 @@ export async function idDeHoja(libro, hoja) {
   return ids.get(clave);
 }
 
+export async function titulo(libro) {
+  const json = await llamar(`${API}/${libro}?fields=properties.title`, { limite: LIMITE_LECTURA_MS, intentos: 3 });
+  return json.properties.title;
+}
+
 export async function hojas(libro) {
   const json = await llamar(`${API}/${libro}?fields=sheets.properties`, { limite: LIMITE_LECTURA_MS, intentos: 3 });
   return json.sheets.map((s) => s.properties);
