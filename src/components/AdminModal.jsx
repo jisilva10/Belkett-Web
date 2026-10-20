@@ -36,7 +36,7 @@ export function AdminModal({ isOpen, onClose }) {
     const fetchBalance = async (producto) => {
         setBalanceResponse("Consultando...");
         try {
-            const res = await fetch(import.meta.env.VITE_WEBHOOK_CONSULTA_URL, {
+            const res = await fetch('/api/consulta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ accion: 'consultar_saldo', producto })
@@ -72,7 +72,7 @@ export function AdminModal({ isOpen, onClose }) {
         };
 
         try {
-            const res = await fetch(import.meta.env.VITE_WEBHOOK_URL, {
+            const res = await fetch('/api/inventario', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(payload)

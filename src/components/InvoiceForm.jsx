@@ -93,7 +93,9 @@ export function InvoiceForm({ onSuccess }) {
     };
 
     try {
-      await fetch('https://1.jisn8n.work/webhook/ingresar-facturas', {
+      // n8n contestaba "recibido" antes de escribir y la web daba éxito aunque
+      // la factura no se guardara. La API contesta OK solo si quedó en la hoja.
+      const res = await fetch('/api/facturas', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,6 +103,7 @@ export function InvoiceForm({ onSuccess }) {
         },
         body: JSON.stringify(payload)
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       
       onSuccess(payload);
       
@@ -113,7 +116,7 @@ export function InvoiceForm({ onSuccess }) {
       });
     } catch (error) {
       console.error("Webhook error:", error);
-      alert("Hubo un error al enviar la factura. Por favor, revisa tu conexión o la URL del webhook.");
+      alert("La factura NO se guardó. Revisa tu conexión y vuelve a presionar Enviar Factura.");
     } finally {
       setIsSubmitting(false);
     }

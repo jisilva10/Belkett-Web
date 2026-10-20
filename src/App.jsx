@@ -11,9 +11,9 @@ import { cn } from './lib/utils';
 
 import logo from './assets/logo.png';
 
-// n8n contesta recién cuando terminó de escribir en la hoja. Si Google Sheets
-// se cuelga, n8n se rinde a los ~130 s (30/09: ejecuciones 4796, 4797, 4800 y
-// 4801). Esperamos un poco más que eso para que la web sepa SIEMPRE si quedó
+// /api/inventario contesta recién cuando terminó de escribir en la hoja. Con
+// n8n, si Google Sheets se colgaba, se esperaba ~130 s (30/09). Esperamos un
+// poco más que lo que puede tardar la API para que la web sepa SIEMPRE si quedó
 // guardado o no, en vez de adivinar.
 const LIMITE_ENVIO_MS = 150000;
 const AVISO_LENTO_MS = 12000;
@@ -91,7 +91,7 @@ export default function App() {
       return;
     }
 
-    // Un envío en ceros no es un dato: en modo Cierre n8n lo lee como
+    // Un envío en ceros no es un dato: en modo Cierre la API lo lee como
     // "dejé 0 flores" y arrasa el saldo de todo el inventario.
     const categorias = [
       formData.rosas_individuales,
@@ -178,7 +178,7 @@ export default function App() {
 
     console.log("Payload:", payload);
 
-    // Antes se mostraba "éxito" pasara lo que pasara. Ahora solo si n8n
+    // Antes se mostraba "éxito" pasara lo que pasara. Ahora solo si la API
     // confirma; si no, los números se quedan en pantalla para reenviarlos.
     const controller = new AbortController();
     const cortar = setTimeout(() => controller.abort(), LIMITE_ENVIO_MS);
@@ -186,7 +186,7 @@ export default function App() {
     let guardado = false;
 
     try {
-      const res = await fetch(import.meta.env.VITE_WEBHOOK_URL, {
+      const res = await fetch('/api/inventario', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
