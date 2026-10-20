@@ -1,7 +1,8 @@
-// GET /api/estado — solo en la versión de prueba (Preview). Dice a qué libros
-// y a qué chats apuntan las variables, por su nombre, sin escribir nada y sin
-// mostrar llaves. Sirve para confirmar que la prueba usa las COPIAS antes de
-// tocar nada. En producción no existe.
+// GET /api/estado — dice a qué libros y a qué chats apuntan las variables de
+// este entorno, por su nombre, sin escribir nada y sin mostrar llaves. En la
+// prueba (Preview) tiene que decir «PRUEBA migración…» y «José»; en producción
+// «Inventario Belkett», «Facturas Belkett» y los dos grupos. Las variables de
+// Vercel no se pueden leer una vez guardadas: esta es la forma de comprobarlas.
 import { titulo } from './_lib/google.js';
 import { libros, chats } from './_lib/config.js';
 
@@ -12,7 +13,6 @@ async function nombreDelChat(chatId) {
 }
 
 export default async function handler(req, res) {
-  if (process.env.VERCEL_ENV === 'production') return res.status(404).json({ ok: false });
   const intentar = (f) => f().catch((err) => `error: ${err.message}`);
   res.status(200).json({
     entorno: process.env.VERCEL_ENV || 'local',
